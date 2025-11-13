@@ -12,6 +12,11 @@ from sklearn.ensemble import BaggingClassifier
 from sklearn.metrics import log_loss,accuracy_score
 import os,sys,traceback
 
+
+
+
+#Authors Marcos Lopez Deprado,Elliott Hamilton,....
+
 #pages 1 to 327
 ################################################################
 
