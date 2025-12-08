@@ -17,9 +17,16 @@ from time import sleep
 import threading
 import csv
 import os
+import time
 from datetime import datetime, timezone, timedelta
-
+import os,sys,traceback
 # Optional scientific libs (used in some fallbacks). Tests may monkeypatch these.
+def now():
+    '''The current epoch time'''
+    return time.time()
+
+def clock_time():
+    return datetime.fromtimestamp(now())
 try:
     import pandas as pd  # type: ignore
 except Exception:  # pragma: no cover
@@ -105,9 +112,8 @@ except Exception:  # pragma: no cover
 #get_market_order_volume_ewma(self, instrument='EUR_USD', granularity='M1', samples=1000, span=36, order_tick_ratio=1.0, as_dataframe=True)
 ##################################################
 ##################################################
-
 class oanda_api(dict):
-    def __init__(self, api_token=None, account_id=None):
+    def __init__(self, api_token="",account_id=""):
         # Avoid hardcoding secrets; allow env overrides with safe defaults for offline/dev
         api_token = api_token or os.environ.get('OANDA_TOKEN', 'TEST')
         account_id = account_id or os.environ.get('OANDA_ACCOUNT', 'ACC')
@@ -115,6 +121,17 @@ class oanda_api(dict):
         self['account_id'] = account_id
         self['api'] = API(access_token=api_token)
         self._install_maintenance_wrappers()
+        # Initialize fill logging state
+        self['_fill_logger_path'] = None
+        self['_fill_logger_thread'] = None
+        self['_fill_logger_stop'] = threading.Event()
+        self['_known_trade_ids'] = set()
+        # Initialize PnL logging state
+        self['_pnl_logger_path'] = None
+        self['_pnl_logger_thread'] = None
+        self['_pnl_logger_stop'] = threading.Event()
+        self['_pnl_last_txn_id'] = None
+        self['_realized_pl_cum'] = {}
 
     def _is_maintenance_error(self, err, response_text=None, status_code=None):
         try:
@@ -147,6 +164,373 @@ class oanda_api(dict):
                         continue
                     raise
         self['api'].request = maintenance_request
+
+    # ---- Fill logger utilities ----
+    def _ensure_dir(self, path):
+        try:
+            os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+        except Exception:
+            pass
+
+    def _ensure_fills_file(self, path):
+        self._ensure_dir(path)
+        if not os.path.exists(path):
+            try:
+                with open(path, 'w', newline='') as f:
+                    w = csv.writer(f)
+                    w.writerow(['time','instrument','trade_id','side','units','price','rolling_unrealized_pl','nav'])
+            except Exception:
+                pass
+
+    def _append_fill_row(self, path, row):
+        try:
+            with open(path, 'a', newline='') as f:
+                w = csv.writer(f)
+                w.writerow(row)
+        except Exception:
+            pass
+
+    def _log_trade_as_fill(self, t):
+        try:
+            path = self.get('_fill_logger_path')
+            if not path:
+                return
+            trade_id = str(t.get('id'))
+            if trade_id in self['_known_trade_ids']:
+                return
+            instr = t.get('instrument')
+            try:
+                units = float(t.get('currentUnits', 0))
+            except Exception:
+                units = 0.0
+            side = 'BUY' if units > 0 else 'SELL' if units < 0 else 'FLAT'
+            try:
+                price = float(t.get('price', 0))
+            except Exception:
+                price = 0.0
+            try:
+                rolling_pl = float(self.get_pl())
+            except Exception:
+                rolling_pl = 0.0
+            try:
+                nav = float(self.get_nav())
+            except Exception:
+                nav = 0.0
+            ts = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
+            self._append_fill_row(path, [ts, instr, trade_id, side, int(units), price, rolling_pl, nav])
+            self['_known_trade_ids'].add(trade_id)
+        except Exception:
+            pass
+
+    def poll_and_log_fills(self):
+        """
+        Detect newly opened trades and append a CSV row per fill. Uses OpenTrades as a robust source.
+        """
+        try:
+            trades = self.get_position_list()
+            for t in trades:
+                self._log_trade_as_fill(t)
+        except Exception:
+            pass
+
+    def _fill_logger_loop(self, interval):
+        while not self['_fill_logger_stop'].is_set():
+            try:
+                self.poll_and_log_fills()
+            except Exception:
+                pass
+            self['_fill_logger_stop'].wait(interval)
+
+    def start_fill_logger(self, path='logs/fills.csv', poll_interval=5.0):
+        """
+        Start a background thread to write fills to CSV when new trades appear.
+        Columns: time, instrument, trade_id, side, units, price, rolling_unrealized_pl, nav
+        """
+        try:
+            self['_fill_logger_path'] = path
+            self._ensure_fills_file(path)
+            self['_fill_logger_stop'].clear()
+            if self['_fill_logger_thread'] and self['_fill_logger_thread'].is_alive():
+                return True
+            th = threading.Thread(target=self._fill_logger_loop, args=(float(poll_interval),), daemon=True)
+            self['_fill_logger_thread'] = th
+            th.start()
+            # Initial sweep to catch any existing trades
+            try:
+                self.poll_and_log_fills()
+            except Exception:
+                pass
+            return True
+        except Exception:
+            return False
+
+    def stop_fill_logger(self):
+        """
+        Stop the background fill logger thread.
+        """
+        try:
+            self['_fill_logger_stop'].set()
+            th = self.get('_fill_logger_thread')
+            if th:
+                th.join(timeout=0.1)
+            self['_fill_logger_thread'] = None
+            return True
+        except Exception:
+            return False
+
+    # ---- PnL logger utilities (unrealized and realized) ----
+    def _ensure_pnl_file(self, path):
+        try:
+            os.makedirs(os.path.dirname(os.path.abspath(path)), exist_ok=True)
+        except Exception:
+            pass
+        if not os.path.exists(path):
+            try:
+                with open(path, 'w', newline='') as f:
+                    w = csv.writer(f)
+                    # Columns: cost basis and current price (mid) plus PnL
+                    w.writerow(['time','instrument','side','units','cost_basis','mid_price','unrealized_pl','realized_pl_cum'])
+            except Exception:
+                pass
+
+    def _append_pnl_row(self, path, row):
+        try:
+            with open(path, 'a', newline='') as f:
+                w = csv.writer(f)
+                w.writerow(row)
+        except Exception:
+            pass
+
+    def _init_last_txn_id(self):
+        """
+        Initialize the last transaction id so we don't backfill historical realized PnL.
+        Prefer Accounts.AccountDetails lastTransactionID for robustness.
+        """
+        if self.get('_pnl_last_txn_id') is not None:
+            return
+        try:
+            import oandapyV20.endpoints.accounts as oanda_accounts
+            r = oanda_accounts.AccountDetails(accountID=self['account_id'])
+            rv = self['api'].request(r)
+            last_id = rv.get('lastTransactionID') if isinstance(rv, dict) else None
+            if last_id is not None:
+                self['_pnl_last_txn_id'] = str(last_id)
+        except Exception:
+            # leave as None; next poll will try best-effort
+            self['_pnl_last_txn_id'] = None
+
+    def _poll_transactions_for_realized(self):
+        """
+        Poll recent transactions since last id and accumulate realized PnL per instrument.
+        Looks for 'realizedPL' or 'pl' fields on transactions with an instrument.
+        """
+        try:
+            import oandapyV20.endpoints.transactions as oanda_transactions
+        except Exception:
+            return
+        try:
+            if self.get('_pnl_last_txn_id') is None:
+                # Initialize to current latest so we don't backfill
+                self._init_last_txn_id()
+                return
+            params = {'id': str(self['_pnl_last_txn_id'])}
+            req = oanda_transactions.TransactionsSinceID(accountID=self['account_id'], params=params)
+            resp = self['api'].request(req)
+            txs = resp.get('transactions', []) if isinstance(resp, dict) else []
+            max_id = self['_pnl_last_txn_id']
+            for tx in txs:
+                try:
+                    tid = str(tx.get('id')) if tx.get('id') is not None else None
+                    if tid and (max_id is None or (tid.isdigit() and (not str(max_id).isdigit() or int(tid) > int(max_id)))):
+                        max_id = tid
+                except Exception:
+                    pass
+                instr = tx.get('instrument')
+                if not instr:
+                    continue
+                realized = None
+                for k in ('realizedPL', 'pl'):
+                    if tx.get(k) is not None:
+                        try:
+                            realized = float(tx.get(k))
+                            break
+                        except Exception:
+                            realized = None
+                if realized is None:
+                    continue
+                try:
+                    self['_realized_pl_cum'][instr] = float(self['_realized_pl_cum'].get(instr, 0.0)) + float(realized)
+                except Exception:
+                    pass
+            if max_id is not None:
+                self['_pnl_last_txn_id'] = str(max_id)
+        except Exception:
+            # swallow, continue next poll
+            pass
+
+    def poll_and_log_pnl(self):
+        """
+        Write a row per instrument with cost basis (weighted by abs units), current mid price,
+        unrealized PnL (sum of trade unrealizedPL), and cumulative realized PnL.
+        """
+        try:
+            # First, update realized PnL accumulation
+            self._poll_transactions_for_realized()
+        except Exception:
+            pass
+        # Build aggregates from open trades
+        agg = {}  # instr -> {'net_units', 'abs_units', 'cb_num', 'unreal'}
+        try:
+            trades = self.get_position_list()
+        except Exception:
+            trades = []
+        for t in trades:
+            try:
+                instr = t.get('instrument')
+                if not instr:
+                    continue
+                units = float(t.get('currentUnits', 0))
+                price = float(t.get('price', 0))
+                unreal = float(t.get('unrealizedPL', 0))
+            except Exception:
+                continue
+            d = agg.get(instr) or {'net_units': 0.0, 'abs_units': 0.0, 'cb_num': 0.0, 'unreal': 0.0}
+            d['net_units'] += units
+            d['abs_units'] += abs(units)
+            d['cb_num'] += abs(units) * price
+            d['unreal'] += unreal
+            agg[instr] = d
+        # Union with instruments that have realized PnL even if flat now
+        instruments = set(agg.keys()) | set(self.get('_realized_pl_cum', {}).keys())
+        path = self.get('_pnl_logger_path')
+        if not path:
+            return
+        ts = datetime.utcnow().replace(tzinfo=timezone.utc).isoformat()
+        for instr in instruments:
+            d = agg.get(instr, {'net_units': 0.0, 'abs_units': 0.0, 'cb_num': 0.0, 'unreal': 0.0})
+            try:
+                cp = self.current_price(instr).get('mid', None)
+                mid = float(cp) if cp is not None else None
+            except Exception:
+                mid = None
+            cost_basis = None
+            if d['abs_units'] > 0:
+                try:
+                    cost_basis = d['cb_num'] / d['abs_units']
+                except Exception:
+                    cost_basis = None
+            side = 'LONG' if d['net_units'] > 0 else 'SHORT' if d['net_units'] < 0 else 'FLAT'
+            realized_cum = float(self['_realized_pl_cum'].get(instr, 0.0)) if self.get('_realized_pl_cum') else 0.0
+            row = [
+                ts,
+                instr,
+                side,
+                int(d['net_units']) if isinstance(d['net_units'], (int, float)) else 0,
+                (None if cost_basis is None else float(cost_basis)),
+                (None if mid is None else float(mid)),
+                float(d['unreal']) if isinstance(d['unreal'], (int, float)) else 0.0,
+                realized_cum
+            ]
+            self._append_pnl_row(path, row)
+
+    def _pnl_logger_loop(self, interval):
+        while not self['_pnl_logger_stop'].is_set():
+            try:
+                self.poll_and_log_pnl()
+            except Exception:
+                pass
+            self['_pnl_logger_stop'].wait(interval)
+
+    def start_pnl_logger(self, path='logs/pnl.csv', poll_interval=5.0):
+        """
+        Start background PnL logger writing unrealized and realized PnL with cost basis and mid price.
+        """
+        try:
+            self['_pnl_logger_path'] = path
+            self._ensure_pnl_file(path)
+            self['_pnl_logger_stop'].clear()
+            # Initialize last transaction ID pointer
+            try:
+                self._init_last_txn_id()
+            except Exception:
+                pass
+            if self['_pnl_logger_thread'] and self['_pnl_logger_thread'].is_alive():
+                return True
+            th = threading.Thread(target=self._pnl_logger_loop, args=(float(poll_interval),), daemon=True)
+            self['_pnl_logger_thread'] = th
+            th.start()
+            # Initial sample
+            try:
+                self.poll_and_log_pnl()
+            except Exception:
+                pass
+            return True
+        except Exception:
+            return False
+
+    def stop_pnl_logger(self):
+        try:
+            self['_pnl_logger_stop'].set()
+            th = self.get('_pnl_logger_thread')
+            if th:
+                th.join(timeout=0.1)
+            self['_pnl_logger_thread'] = None
+            return True
+        except Exception:
+            return False
+
+    def get_instrument_margin_used(self, instrument='EUR_USD'):
+        """
+        Return total margin used (in account currency, assumed USD) for a specific instrument.
+        Prefers OANDA-provided trade['marginUsed']; falls back to estimate:
+          abs(units) * mid_price (quote cc) -> USD via convert_currency -> * marginRate
+        """
+        try:
+            instr = str(instrument).upper().replace('-', '_').strip()
+            trades = self.get_position_list()
+            total = 0.0
+            for t in trades:
+                try:
+                    if str(t.get('instrument', '')).upper() != instr:
+                        continue
+                    # Use API-provided marginUsed if available
+                    mu = t.get('marginUsed', None)
+                    if mu is not None:
+                        total += float(mu)
+                        continue
+                    # Fallback estimate
+                    units = abs(float(t.get('currentUnits', 0.0)))
+                    if units <= 0.0:
+                        continue
+                    px = self.current_price(instr)
+                    mid = float(px.get('mid', 1.0))
+                    quote_ccy = instr.split('_')[1] if '_' in instr else 'USD'
+                    notional_quote = units * mid
+                    notional_usd = self.convert_currency(quote_ccy, 'USD', notional_quote)
+                    mr = float(self.get_margin_percent(instr))
+                    total += float(notional_usd) * mr
+                except Exception:
+                    continue
+            return float(total)
+        except Exception:
+            return 0.0
+
+    def get_instrument_margin_available(self,instrument,status='switch'):
+        margin_percent=self.get_margin_percent(instrument)
+        if margin_percent is None:
+            return None
+        total_margin_available=self.get_total_margin_available()*.9
+        if margin_percent==0:
+            return None
+        instrument_margin_available=total_margin_available/margin_percent
+        if status=='not_switch':
+            return self.convert_currency('USD',instrument.split('_')[0],instrument_margin_available)
+        if status=='switch':
+            positions=self.get_instrument_positions(instrument)
+            units=0
+            for position in positions:
+                units+=abs(float(position['units']))
+            return self.convert_currency('USD',instrument.split('_')[0],instrument_margin_available)+units*2*.9
 
     def get_balance(self):
         try:
@@ -208,6 +592,63 @@ class oanda_api(dict):
         for each in self.get_instrument_positions(name):
             total_units+=int(each['units'])
         return total_units
+
+
+
+    def get_total_pending_buy_units(self, instrument='EUR_USD'):
+        """
+        Sum total BUY units across all pending orders for the given instrument.
+        Returns integer units (positive).
+        """
+        instr = str(instrument).upper().replace('-', '_').strip()
+        try:
+            r = oanda_orders.OrdersPending(accountID=self['account_id'])
+            rv = self['api'].request(r)
+            pend = rv.get('orders', []) if isinstance(rv, dict) else []
+        except Exception:
+            pend = []
+        total = 0.0
+        for od in pend:
+            try:
+                if str(od.get('instrument', '')).upper() != instr:
+                    continue
+                u = float(od.get('units', 0))
+                if u > 0:
+                    total += u
+            except Exception:
+                continue
+        try:
+            return int(round(total))
+        except Exception:
+            return int(total)
+
+    def get_total_pending_sell_units(self, instrument='EUR_USD'):
+        """
+        Sum total SELL units across all pending orders for the given instrument.
+        Returns integer units (positive number of units to sell).
+        """
+        instr = str(instrument).upper().replace('-', '_').strip()
+        try:
+            r = oanda_orders.OrdersPending(accountID=self['account_id'])
+            rv = self['api'].request(r)
+            pend = rv.get('orders', []) if isinstance(rv, dict) else []
+        except Exception:
+            pend = []
+        total = 0.0
+        for od in pend:
+            try:
+                if str(od.get('instrument', '')).upper() != instr:
+                    continue
+                u = float(od.get('units', 0))
+                if u < 0:
+                    total += abs(u)
+            except Exception:
+                continue
+        try:
+            return int(round(total))
+        except Exception:
+            return int(total)
+
 
     def _get_precisions(self, instrument):
         """
@@ -558,7 +999,73 @@ class oanda_api(dict):
             df.index = range(len(df))
             return df
         
-    def get_all_resting_bids_list(self, instrument='EUR_USD', scale=None, round_price=True, sort='desc'):
+    def _percent_to_units(self, pct, scale=None):
+        """
+        Convert an OANDA OrderBook bucket percent to units.
+        - If 'scale' is provided, uses that: units = (pct/100) * scale
+        - Else uses self['_orderbook_scale'] if configured, defaulting to 1,000,000 units.
+        """
+        try:
+            p = float(pct)
+        except Exception:
+            return 0.0
+        if scale is not None:
+            return (p / 100.0) * float(scale)
+        default_scale = float(self.get('_orderbook_scale', 1000000.0))
+        return (p / 100.0) * default_scale
+
+    def _to_rfc3339(self, dt):
+        try:
+            if dt.tzinfo is None:
+                dt = dt.replace(tzinfo=timezone.utc)
+            dt = dt.astimezone(timezone.utc)
+            s = dt.isoformat().replace('+00:00', 'Z')
+            if '.' in s:
+                s = s.split('.')[0] + 'Z'
+            return s
+        except Exception:
+            return datetime.now(timezone.utc).isoformat().split('.')[0] + 'Z'        
+
+    def get_order_book_snapshot(self, instrument='EUR_USD', at=None):
+        """
+        Fetch OANDA order book snapshot near the given RFC3339 time.
+        Returns a dict with the raw API response, or {} if unavailable.
+        """
+        instr = str(instrument).upper().replace('-', '_').strip()
+        if at is None:
+            params = {}
+        else:
+            t = self._to_rfc3339(at)
+            params = {'time': t}
+        try:
+            req = oanda_instruments.OrderBook(instrument=instr, params=params)
+            resp = self['api'].request(req)
+            if isinstance(resp, dict) and resp.get('orderBook'):
+                return resp
+        except Exception:
+            pass
+        try:
+            headers = {
+                'Authorization': f"Bearer {self['api_token']}",
+                'Content-Type': 'application/json'
+            }
+            urls = [
+                f"https://api-fxtrade.oanda.com/v3/instruments/{instr}/orderBook",
+                f"https://api-fxpractice.oanda.com/v3/instruments/{instr}/orderBook"
+            ]
+            for url in urls:
+                try:
+                    r = requests.get(url, headers=headers, params=params, timeout=10)
+                    if r.status_code == 200:
+                        return r.json()
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        return {}
+
+
+    def get_all_resting_bids_list(self, instrument='EUR_USD', scale=None, round_price=True, sort='asc'):
         """
         Return all resting bid buckets as a list of {'price': ..., 'units': ...} sorted by price.
         - units are integer volumes converted from OANDA longCountPercent using scale or configured default.
@@ -802,8 +1309,34 @@ class oanda_api(dict):
 
 
 
-    def place_order(self, instrument='EUR_USD', units=1000, price=None,stop=False, wait=False, timeout=60, poll_interval=1.0):
+    def get_min_trailing_stop_distance(self, instrument):
+        """
+        Query OANDA for the minimum trailing stop distance (in price units) for an instrument.
+        Returns float distance or None if unavailable. Falls back across several known keys.
+        """
+        try:
+            import oandapyV20.endpoints.accounts as oanda_accounts
+            instr = str(instrument).upper().replace('-', '_').strip()
+            params = {'instruments': instr}
+            r = oanda_accounts.AccountInstruments(accountID=self['account_id'], params=params)
+            resp = self['api'].request(r)
+            instruments = resp.get('instruments', []) if isinstance(resp, dict) else []
+            if instruments:
+                meta = instruments[0]
+                for key in ('minimumTrailingStopDistance', 'minimumStopLossDistance', 'minimumDistance'):
+                    val = meta.get(key)
+                    if val is not None:
+                        try:
+                            return float(val)
+                        except Exception:
+                            pass
+        except Exception:
+            pass
+        return None
+
+    def place_order(self, instrument='EUR_USD', units=1000, price=None, stop=False, precision=None, trailing_stop_pips=None, wait=False, timeout=60, poll_interval=1.0):
         # normalize and validate instrument for orders
+        units=int(units)
         instr = str(instrument).upper().replace('-', '_').strip()
         disp, tick, pip = self._get_precisions(instr)
         if not self._has_instrument(instr):
@@ -821,17 +1354,58 @@ class oanda_api(dict):
         }
         if price is not None:
             data['order']['price'] = str(price)
-            data['order']['type'] = 'STOP'
+            data['order']['type'] = 'LIMIT'
             data['order']['timeInForce'] = 'GTC'
         if stop:
-            #data['order']['type'] = 'stopLimit'
-            data["stopPrice"]=str(price)
-            data['order']['stopLossOnFill']={'distance':pip*5}
-            data['order']['timeInForce'] = 'GTC'    
+            data['order']['type'] = 'STOP'
+            if price is not None:
+                data['order']['price'] = str(price)
+            data['order']['timeInForce'] = 'GTC'
+            # Only attach a fixed stopLossOnFill if no trailing stop is requested
+            if trailing_stop_pips is None:
+                if not precision:
+                    precision = pip*5
+                data['order']['stopLossOnFill'] = {'distance': str(precision)}
+        # Attach trailing stop (distance in price units) if requested
+        if trailing_stop_pips is not None:
+            try:
+                # Convert pips to price distance
+                dist = float(trailing_stop_pips) * float(pip)
+                # Ensure we meet OANDA's minimum trailing stop distance if available
+                min_dist = self.get_min_trailing_stop_distance(instr)
+                min_pips = None
+                if min_dist is not None:
+                    dist = max(dist, float(min_dist))
+                    try:
+                        min_pips = float(min_dist) / float(pip)
+                    except Exception:
+                        min_pips = None
+                # Round up to the instrument tick size to avoid falling under minimum due to rounding
+                if tick and float(tick) > 0:
+                    dist = math.ceil(dist / float(tick)) * float(tick)
+                else:
+                    q = 10 ** int(disp)
+                    dist = math.ceil(dist * q) / q
+                if dist > 0:
+                    data['order']['trailingStopLossOnFill'] = {'distance': str(dist)}
+                    # Debug note if user's pips was below broker minimum
+                    try:
+                        if min_pips is not None and float(trailing_stop_pips) < float(min_pips):
+                            print(f"Adjusted trailing_stop_pips from {trailing_stop_pips} to broker minimum ≈ {round(min_pips, 5)} pips for {instr} (distance {dist}).")
+                    except Exception:
+                        pass
+            except Exception:
+                pass
         r = oanda_orders.OrderCreate(accountID=self['account_id'], data=data)
         try:
             rv = self['api'].request(r)
             logging.info(f"Placed order: {rv}")
+            # If fill logger is running, opportunistically poll to log immediate fills
+            try:
+                if self.get('_fill_logger_thread'):
+                    self.poll_and_log_fills()
+            except Exception:
+                pass
             if wait and rv is not None:
                 try:
                     return self.wait_for_order_completion(rv, timeout=timeout, poll_interval=poll_interval)
@@ -843,15 +1417,17 @@ class oanda_api(dict):
             logging.error(f"Failed to place order: {e}")
             return None
 
-    def buy(self, instrument='EUR_USD', units=1000, price=None,stop=False, wait=False, timeout=60, poll_interval=1.0):
+    def buy(self, instrument='EUR_USD', units=1000, price=None,stop=False, precision=None, trailing_stop_pips=None, wait=False, timeout=60, poll_interval=1.0):
         #user function
+        print('buy '+instrument+'units '+str(units)+' price '+str(price)+'trailing_stop '+str(trailing_stop_pips))
         units = abs(units)
-        return self.place_order(instrument=instrument, units=units, price=price,stop=stop, wait=wait, timeout=timeout, poll_interval=poll_interval)
+        return self.place_order(instrument=instrument, units=units, price=price,stop=stop, precision=precision, trailing_stop_pips=trailing_stop_pips, wait=wait, timeout=timeout, poll_interval=poll_interval)
         
-    def sell(self, instrument='EUR_USD', units=1000, price=None,stop=False, wait=False, timeout=60, poll_interval=1.0):
+    def sell(self, instrument='EUR_USD', units=1000, price=None,stop=False, precision=None, trailing_stop_pips=None, wait=False, timeout=60, poll_interval=1.0):
         #user function
+        print('sell '+instrument+'units '+str(units)+' price '+str(price)+'trailing_stop '+str(trailing_stop_pips))
         units = abs(units)
-        return self.place_order(instrument=instrument, units=-units, price=price,stop=stop, wait=wait, timeout=timeout, poll_interval=poll_interval)
+        return self.place_order(instrument=instrument, units=-units, price=price,stop=stop, precision=precision, trailing_stop_pips=trailing_stop_pips, wait=wait, timeout=timeout, poll_interval=poll_interval)
 
     def cancel_orders(self):
         """
