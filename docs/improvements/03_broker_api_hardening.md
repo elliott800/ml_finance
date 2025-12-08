@@ -59,4 +59,10 @@ Make broker API interactions explicit, validated, resilient, and testable.
 ## Implementation hints
 
 - Files to change: `broker_api.py`, tests under `tests/unit/` and `tests/integration/`.
-- Consider `responses` or `requests-mock` for HTTP-based brokers, or use test doubles for SDKs like `oandapyV20`.
+- Concrete steps:
+  - Replace `except:` blocks with targeted catches (`except NetworkError as e:` / `except Exception as e:`) and add `logging.exception(...)` where appropriate.
+  - Add input validation for order parameters (instrument, units, price) and return early with clear errors for invalid inputs.
+  - Implement a retry helper/decorator that supports exponential backoff with jitter and a configurable max retries; apply it to network calls.
+  - Add structured logging (include request id, instrument, amount, side) and sanitize logged data to avoid secrets.
+  - Add an `offline` simulated broker implementation implementing the same interface for unit tests and CI.
+- Testing helpers: use `responses` or `requests-mock` for HTTP, or create mocks/stubs for SDK clients like `oandapyV20`.

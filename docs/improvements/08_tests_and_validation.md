@@ -65,7 +65,12 @@ Owner: Maintainer / QA
 ## Implementation hints
 
 - Use `csvs/assets/*` sample CSVs for replay tests. Add fixtures under `tests/fixtures/` that load these CSVs and provide deterministic data to the dry-run loop.
-- Prefer subprocess-based smoke tests for initial quick wins (see `docs/improvements/11_add_ci_and_smoke_test.md`), then refactor `scalper.py` to expose an importable `main()` for faster, in-process tests.
+- Steps:
+  - Add unit tests for pure functions (indicators, sizing, margin) under `tests/unit/`.
+  - Add integration smoke test `tests/integration/test_dryrun.py` that runs `scalper.py --dry-run --iterations 1` via `subprocess` initially.
+  - Refactor `scalper.py` to expose an importable `main()` so tests can call it directly for faster and more deterministic in-process tests.
+  - Use a simulated/offline broker implementation for integration tests to avoid external network calls in CI.
+  - Add `hypothesis`-based property tests for critical numeric functions where applicable.
 - Example test file for smoke test (subprocess approach):
 
   ```python

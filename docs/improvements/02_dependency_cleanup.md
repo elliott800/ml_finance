@@ -61,4 +61,9 @@ Make dependency management reproducible and remove typos and obsolete packages.
 ## Implementation hints
 
 - Files to change: `requirements.txt`, optionally `pyproject.toml`, and CI workflow files.
+- Steps:
+  - Manually inspect `requirements.txt` for typos and unused entries.
+  - Use a clean virtualenv to `pip install -r requirements.txt` and fix packages that fail to install.
+  - Pin versions using `pip-compile` (`pip-tools`) or `poetry lock` and commit the lockfile.
+  - Add a CI job that verifies `pip install -r requirements.txt` (or `poetry install`) succeeds on a clean runner.
 - Commands to validate: create a new virtualenv and `pip install -r requirements.txt`.

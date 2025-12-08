@@ -60,3 +60,10 @@ Owner: Team lead / Maintainer
 ## Notes
 
 - Break larger items into smaller PRs and verify each change in CI.
+
+## Implementation hints
+
+- Break the 90-day plan into discrete, reviewable PRs: safety -> CI/tests -> config -> observability.
+- Implement early safety changes directly in `scalper.py` and add unit/integration tests that exercise the dry-run guard.
+- For CI, start with a single `ci.yml` job that installs dependencies and runs `pytest` and `pre-commit` checks; expand the matrix once stable.
+- Track progress with a project board or a checklist in the main issue tracking the 90-day plan; assign owners and due dates for each PR.

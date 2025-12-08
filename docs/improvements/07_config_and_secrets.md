@@ -64,6 +64,12 @@ Owner: Maintainer / Dev
   - `app/settings.py` or `src/config.py` (implement `pydantic.BaseSettings`)
   - `.env.example` at repo root
   - `.gitignore` (append `.env` if missing)
+- Concrete steps:
+  - Implement a `Settings` class using `pydantic.BaseSettings` that reads from `.env` and environment variables and validates required fields.
+  - Add `.env.example` with keys like `ALLOW_LIVE`, `API_KEY`, `API_SECRET`, and `LOG_LEVEL` and append `.env` to `.gitignore`.
+  - Add startup validation in `scalper.py` to fail fast with clear error messages when critical settings are missing.
+  - Check file permissions for any local credential files and warn when too permissive (e.g., world readable).
+  - Document secret rotation and CI secret storage recommendations in `docs/improvements/07_config_and_secrets.md`.
 - Example `pydantic` settings snippet:
 
   ```python

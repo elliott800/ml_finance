@@ -60,4 +60,11 @@ Harden the trading loop and add operational controls to reduce the risk of runaw
 ## Implementation hints
 
 - Files to change: `scalper.py`, `broker_api.py`, add tests under `tests/` and CI workflow updates.
-- Consider `ratelimit` or implementing a small token-bucket helper for control.
+- Concrete steps:
+  - Add a CLI parser (e.g., `argparse`) in `scalper.py` with flags: `--dry-run`, `--live`, `--config`, `--log-level`, `--max-trades`, `--iterations`.
+  - Enforce live guard early: check `ALLOW_LIVE` env var and `--live` flag, prompt for confirmation and support `--yes` for automated CI.
+  - Implement a throttler (token-bucket or leaky-bucket) as a small helper module and integrate it around order submissions.
+  - Add pre-trade checks: fetch account balance from `broker_api`, verify available margin, and check concentration/position limits before placing orders.
+  - Add JSON structured logging and log rotation (use `logging.handlers.RotatingFileHandler` or `TimedRotatingFileHandler`).
+  - Add unit and integration tests for the throttler, CLI flags, and pre-trade checks (use the offline broker for deterministic tests).
+- Libraries/techniques to consider: `ratelimit`, simple token-bucket implementation, `argparse`/`click`, `logging` with structured formatters.

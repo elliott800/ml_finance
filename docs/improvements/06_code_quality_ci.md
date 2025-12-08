@@ -68,8 +68,12 @@ Owner: Maintainer / DevOps
   - `pyproject.toml` (formatter settings)
   - `.github/workflows/ci.yml` (runs linters, tests, and dependency scans)
   - `mypy.ini` or `pyproject.toml` mypy section
-- Start by enabling auto-fix hooks (black/isort) and a non-blocking `ruff` check; move to blocking once the repo is formatted.
-- For CI gating around `ALLOW_LIVE`, add a job step that checks repository secrets or environment variables and fails if `ALLOW_LIVE` is set without approved justification.
+- Concrete steps:
+  - Add `.pre-commit-config.yaml` with `black` and `isort` as auto-fix hooks and `ruff`/`mypy` as checks.
+  - Run `pre-commit run --all-files` and commit formatting changes in a single PR.
+  - Create a minimal `ci.yml` that sets up Python, installs deps, runs `pre-commit` (or equivalent), `pytest`, and `pip-audit`.
+  - For the `ALLOW_LIVE` gating: add a CI job or step that inspects repo-level secrets (or checks an env var) and fails if `ALLOW_LIVE` is present without documented justification.
+- Start with conservative rules to reduce disruption, then tighten rules and enable blocking checks once the repo is formatted.
 
 ## Notes
 

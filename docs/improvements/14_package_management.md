@@ -1,8 +1,8 @@
-# Task: 14 - Beginner-friendly package & environment management
+# Task: 14 - Package & environment management
 
 ## Goal
 
-Provide clear, beginner-friendly guidance and repository changes to make creating and managing a Python development environment straightforward—optionally recommending `poetry` (recommended) or the built-in `venv`.
+Provide clear guidance and repository changes to make creating and managing a Python development environment straightforward—optionally recommending `poetry` (recommended) or the built-in `venv`.
 
 ## Priority
 
@@ -54,15 +54,27 @@ Provide clear, beginner-friendly guidance and repository changes to make creatin
 
 ## Acceptance criteria
 
-- [ ] `README.md` contains a clear `Environment setup` section for beginners.
+- [ ] `README.md` contains a clear `Environment setup` section.
 - [ ] Either `pyproject.toml` + `poetry.lock` are added, or the README documents the `venv` flow clearly.
 - [ ] CI workflows are updated to install dependencies via the chosen approach.
 - [ ] A short example of common commands is added (create env, install, run tests).
 
 ## Notes
 
-- This task is intentionally friendly to beginners: it documents both an opinionated, reproducible approach (`poetry`) and the built-in, low-friction approach (`venv`). The maintainer can choose to adopt Poetry fully or keep it as an optional recommendation.
 - Related: `docs/improvements/12_add_env_example_and_gitignore.md` and `CONTRIBUTING.md`.
+
+## Implementation hints
+
+- Suggested files to change:
+  - `README.md` - add "Environment setup" and short commands for macOS/Linux and Windows.
+  - `CONTRIBUTING.md` - add a short paragraph recommending the preferred approach and a safety reminder to run `--dry-run` where appropriate.
+  - CI workflow files (e.g., `.github/workflows/*`) - update dependency installation steps.
+  - Optionally add `pyproject.toml` and `poetry.lock` to repo root.
+
+- Concrete steps:
+  - If adopting Poetry: create a minimal `pyproject.toml`, run `poetry lock` locally and commit `poetry.lock`, and update CI to `poetry install`.
+  - If keeping `requirements.txt`: use `pip-tools` or `poetry export` to produce a pinned `requirements.txt` used by CI and document the workflow for updating it.
+  - Add example commands in `README.md` for creating/activating a venv and installing deps.
 
 ---
 

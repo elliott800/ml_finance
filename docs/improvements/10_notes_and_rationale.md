@@ -57,3 +57,4 @@ links for future contributors.
 
 - Keep this file updated when major architectural choices are made; link to PRs and decision records.
 - When choosing libraries, include version rationale and compatibility notes.
+- Suggested practice: add a short DECISIONS.md or architecture notes file that records the reasoning and link PRs that implemented the change.

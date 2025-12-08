@@ -7,7 +7,7 @@ Introduce `pre-commit` hooks to run formatting and basic linting automatically o
 ## Priority
 
 - Level: Medium
-- Rationale: Linting and formatting reduce review friction and help beginners follow project conventions, but they are not blockers for safety-critical fixes.
+- Rationale: Linting and formatting reduce review friction and help contributors follow project conventions, but they are not blockers for safety-critical fixes.
 
 ## Owner & Estimated effort
 
@@ -96,3 +96,4 @@ pre-commit run --all-files
 ---
 
 This task helps standardize formatting and linting to improve code quality and reviewer experience.
+

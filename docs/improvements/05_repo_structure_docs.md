@@ -52,4 +52,9 @@ Separate research/educational artifacts from production code, and document safe 
 ## Implementation hints
 
 - Suggested files to change: `README.md`, `CONTRIBUTING.md`, add `notes/` folder.
-- Update imports or CI paths if any moved scripts are used by tests or actions.
+- Concrete steps:
+  - Create `notes/` or `recipes/` and move notebooks and experimental scripts there; update their README to explain they are research-only.
+  - Update `README.md` with a safety warning and link to `docs/improvements.md`.
+  - Update `CONTRIBUTING.md` with steps to run tests, use dry-run flags, and PR expectations for live-trading code.
+  - Adjust imports or CI paths if any moved files are used by tests or actions; run the test suite to verify nothing broke.
+- Consider adding a small script `scripts/list-research.sh` to list research artifacts and help reviewers find non-production code.
