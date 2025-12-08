@@ -13,7 +13,6 @@ def find_place_value(value):
     if '.' in value_str:
         integer_part, decimal_part = value_str.split('.')
         place_value = len(decimal_part)
-
         return place_value
     else:
         return 0  # No decimal part
