@@ -21,7 +21,6 @@ while True:#trade loop
     for instrument_name in instruments:
         asset=api.get_candle_history(instrument_name,'M1',500)
         close=asset.close
-        bac=api.get_bid_ask_candles(instrument_name,'M1',500)
         disp,tck,pip=api._get_precisions(instrument_name)
         place_value=find_place_value(pip)
         margin_used=api.get_instrument_margin_used(instrument_name)
