@@ -4,7 +4,7 @@ last_order_refresh=now()
 distance=1
 trade_units=1000
 refresh=60*60
-api=oanda_api()
+api=oanda_api("2c609c14c73aebdddb152cf0b3b782db-21d631577803d5283e01c80ef8c428e0","101-001-31663025-001")
 instruments=list(api._load_tradable_instruments())
 def find_place_value(value):
     # Convert the value to string to check where the decimal point is
@@ -34,15 +34,15 @@ while True:#trade loop
         even_entry_required=True
         if inventory==0 and bu==0 and au==0:
             even_entry_required=False
-            api.buy(trade_units,bid_price);api.sell(trade_units,ask_price)
+            api.buy(instrument_name,trade_units,bid_price);api.sell(instrument_name,trade_units,ask_price)
         if net==0:
             test_units=abs(inventory+bu-au+trade_units)
         else:
             test_units=abs(inventory+bu-au+net)
         if margin_used<10:#critical mm equation
-            if net==0 and even_entry_required:api.buy(trade_units,bid_price);api.sell(trade_units,ask_price)#disable to slow down
-            if net>0:api.buy(net,bid_price)
-            if net<0:api.sell(net,ask_price)
+            if net==0 and even_entry_required:api.buy(instrument_name,trade_units,bid_price);api.sell(instrument_name,trade_units,ask_price)#disable to slow down
+            if net>0:api.buy(instrument_name,net,bid_price)
+            if net<0:api.sell(instrument_name,net,ask_price)
         if now()-last_order_refresh>refresh:
             last_order_refresh=now()
             api.cancel_instrument_orders(instrument_name)
