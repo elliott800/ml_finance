@@ -22,5 +22,5 @@ High Frequecy Trading- Irene Aldridge
 COMMENT:(single_line)
 DATE|NAME|TAG|COMMENT
 ---------------------
-11/8/25|Elliott Hamilton|Eli| this is going to be a fun new project that has some potential for some money in the future, Ive already built a pretty decent pipeline but im looking for improvements.
+11/8/25|Elliott Hamilton|Eli| this is going to be a fun new project that has some potential for some money in the future, Ive already built a pretty decent pipeline in a couple other repos but im looking for improvements.
 
