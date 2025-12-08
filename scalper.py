@@ -9,7 +9,6 @@ instruments=list(api._load_tradable_instruments())
 def find_place_value(value):
     # Convert the value to string to check where the decimal point is
     value_str = str(value)
-    
     # Split the string at the decimal point
     if '.' in value_str:
         integer_part, decimal_part = value_str.split('.')
