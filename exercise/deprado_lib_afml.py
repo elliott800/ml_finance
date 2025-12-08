@@ -1,19 +1,19 @@
 #deprado_lib_afml.py
 #ip notice
-import pandas as pd
-import numpy as np
-import statsmodels as sm
 import datetime as dt
-import time as time
 import multiprocessing as mp
+import os
+import sys
+import time as time
+import traceback
+
 import matplotlib as mpl
-from sklearn.tree import DecisionTreeClassifier
+import numpy as np
+import pandas as pd
+import statsmodels as sm
 from sklearn.ensemble import BaggingClassifier
-from sklearn.metrics import log_loss,accuracy_score
-import os,sys,traceback
-
-
-
+from sklearn.metrics import accuracy_score, log_loss
+from sklearn.tree import DecisionTreeClassifier
 
 #Authors Marcos Lopez Deprado,Elliott Hamilton,....
 
@@ -1431,6 +1431,8 @@ def expandCall(kargs):
 #pg306
 #SNIPPET 20.5 THE linParts FUNCTION
 import numpy as np
+
+
 #———————————————————————————————————————
 def linParts(numAtoms,numThreads):
     # partition of atoms with a single loop
@@ -1851,8 +1853,8 @@ class PurgedKFold(_BaseKFold):
 def cvScore(clf,X,y,sample_weight,scoring='neg_log_loss',t1=None,cv=None,cvGen=None,pctEmbargo=None):
     if scoring not in ['neg_log_loss','accuracy']:
     raise Exception('wrong scoring method.')
-    from sklearn.metrics import log_loss,accuracy_score
     from clfSequential import PurgedKFold
+    from sklearn.metrics import accuracy_score, log_loss
     if cvGen is None:
     cvGen=PurgedKFold(n_splits=cv,t1=t1,pctEmbargo=pctEmbargo) # purged
     score=[]

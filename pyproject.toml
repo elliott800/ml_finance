@@ -1,0 +1,10 @@
+[tool.ruff]
+exclude = ["exercise", "exercise/*"]
+
+[tool.black]
+exclude = "exercise/"
+line-length = 88
+
+[tool.isort]
+skip = ["exercise"]
+profile = "black"

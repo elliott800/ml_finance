@@ -108,10 +108,10 @@ After some basic settings, MeanReversion subclasses CustomFactor and defines a c
 
 The compute_factors() method creates a MeanReversion factor instance and creates long, short, and ranking pipeline columns. The former two contain Boolean values that could be used to place orders, and the latter reflects that overall ranking to evaluate the overall factor performance. Furthermore, it uses the built-in AverageDollarVolume factor to limit the computation to more liquid stocks:'''
 
-from zipline.api import attach_pipeline, pipeline_output, record
-from zipline.pipeline import Pipeline, CustomFactor
-from zipline.pipeline.factors import Returns, AverageDollarVolume
 from zipline import run_algorithm
+from zipline.api import attach_pipeline, pipeline_output, record
+from zipline.pipeline import CustomFactor, Pipeline
+from zipline.pipeline.factors import AverageDollarVolume, Returns
 
 MONTH, YEAR = 21, 252
 N_LONGS = N_SHORTS = 25
@@ -164,15 +164,18 @@ The Quantopian research environment is tailored to the rapid testing of predicti
 
 Quantopian provides several hundred MorningStar fundamental variables for free and also includes stocktwits signals as an example of an alternative data source. There are also custom universe definitions such as QTradableStocksUS that applies several filters to limit the backtest universe to stocks that were likely tradeable under realistic market conditions: '''
 
-from quantopian.research import run_pipeline
 from quantopian.pipeline import Pipeline
 from quantopian.pipeline.data.builtin import USEquityPricing
-from quantopian.pipeline.data.morningstar import income_statement, 
+from quantopian.pipeline.data.morningstar import income_statement
+from quantopian.research import run_pipeline
+
      operation_ratios, balance_sheet
 from quantopian.pipeline.data.psychsignal import stocktwits
-from quantopian.pipeline.factors import CustomFactor, 
+from quantopian.pipeline.factors import CustomFactor
+
      SimpleMovingAverage, Returns
 from quantopian.pipeline.filters import QTradableStocksUS
+
 We will use a custom AggregateFundamentals class to use the last reported fundamental data point. This aims to address the fact that fundamentals are reported quarterly, and Quantopian does not currently provide an easy way to aggregate historical data, say to obtain the sum of the last four quarters, on a rolling basis:
 
 class AggregateFundamentals(CustomFactor):
@@ -325,6 +328,7 @@ Pyfolio allows for the designation of an out-of-sample period to simulate walk-f
 The plot_rolling_returns function displays cumulative in and out-of-sample returns against a user-defined benchmark (we are using the S&P 500):'''
 
 from pyfolio.plotting import plot_rolling_returns
+
 plot_rolling_returns(returns=returns,
                      factor_returns=benchmark_rets,
                      live_start_date='2017-01-01',
@@ -345,6 +349,7 @@ Alpha: Portfolio return unexplained by the benchmark return
 Beta: Exposure to the benchmark'''
 
 from pyfolio.timeseries import perf_stats
+
 perf_stats(returns=returns, 
            factor_returns=benchmark_rets, 
            positions=positions, 
@@ -481,7 +486,7 @@ The Kelly rule aims to maximize the value's growth rate, G, of infinitely-repeat
 '''When W and L are the numbers of wins and losses, then:
 We can maximize the rate of growth G by maximizing G with respect to f, as illustrated using sympy as follows: 
 '''
-from sympy import symbols, solve, log, diff
+from sympy import diff, log, solve, symbols
 
 share, odds, probability = symbols('share odds probability')
 Value = probability * log(1 + odds * share) + (1 - probability) * log(1 
@@ -513,6 +518,7 @@ Time series data typically contains a mix of various patterns that can be decomp
 These components can be split up automatically. statsmodels includes a simple method to split the time series into a trend, seasonal, and residual component using moving averages. We can apply it to monthly data on industrial manufacturing production with both a strong trend and seasonality component, as follows:'''
 
 import statsmodels.tsa.api as tsa
+
 industrial_production = web.DataReader('IPGMFN', 'fred', '1988', '2017-12').squeeze()
 components = tsa.seasonal_decompose(industrial_production, model='additive')
 ts = (industrial_production.to_frame('Original')
