@@ -17,11 +17,13 @@ Prevent accidental live trading and ensure the trading loop can be stopped and a
 ## Roadmap (example)
 
 - Week 1–2 — Short-term goals
+
   - Make `--dry-run` the default and require `ALLOW_LIVE=true` plus `--live` to place real orders.
   - Add an interactive `Type YES to continue:` confirmation for live mode.
   - Add `--yes` override for CI when `ALLOW_LIVE=true` is set.
 
 - Week 3 — Mid-term goals
+
   - Add signal handlers and graceful shutdown behavior.
   - Replace silent exception swallowing in critical paths with explicit logging.
 
@@ -41,7 +43,8 @@ Prevent accidental live trading and ensure the trading loop can be stopped and a
 
 ### Longer projects (3–8+ weeks)
 
-- Introduce a controlled scheduler to replace unconditional `while True:` loops and support deterministic iteration counts for testing.
+- Introduce a controlled scheduler to replace unconditional `while True:` loops and support deterministic iteration
+  counts for testing.
 
 ## Validation
 
@@ -65,4 +68,5 @@ Prevent accidental live trading and ensure the trading loop can be stopped and a
 
 - Suggested files to change: `scalper.py`, `broker_api.py`.
 - Add tests under `tests/integration/` for dry-run smoke tests and unit tests for error handling.
-- Consider adding an environment check early in `scalper.py` that fails fast when `ALLOW_LIVE` is not present for live operations.
+- Consider adding an environment check early in `scalper.py` that fails fast when `ALLOW_LIVE` is not present for live
+  operations.

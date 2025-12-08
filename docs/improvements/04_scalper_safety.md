@@ -17,10 +17,13 @@ Harden the trading loop and add operational controls to reduce the risk of runaw
 ## Roadmap (example)
 
 - Week 1 — Short-term goals
-  - Add CLI arguments: `--dry-run`, `--live`, `--config PATH`, `--log-level LEVEL`, `--max-trades N`, and `--iterations N`.
+
+  - Add CLI arguments: `--dry-run`, `--live`, `--config PATH`, `--log-level LEVEL`, `--max-trades N`, and
+    `--iterations N`.
   - Enforce live guard requiring `ALLOW_LIVE=true` and `--live`.
 
 - Week 2 — Mid-term goals
+
   - Add logging with rotation and JSON formatting.
   - Implement a rate-limiter for order submissions.
 
@@ -44,7 +47,8 @@ Harden the trading loop and add operational controls to reduce the risk of runaw
 
 ## Validation
 
-- `--max-trades` and `--iterations` limit actions in `--dry-run` mode and the throttler prevents rapid submissions during tests.
+- `--max-trades` and `--iterations` limit actions in `--dry-run` mode and the throttler prevents rapid submissions
+  during tests.
 
 ## Acceptance criteria
 
@@ -61,10 +65,17 @@ Harden the trading loop and add operational controls to reduce the risk of runaw
 
 - Files to change: `scalper.py`, `broker_api.py`, add tests under `tests/` and CI workflow updates.
 - Concrete steps:
-  - Add a CLI parser (e.g., `argparse`) in `scalper.py` with flags: `--dry-run`, `--live`, `--config`, `--log-level`, `--max-trades`, `--iterations`.
-  - Enforce live guard early: check `ALLOW_LIVE` env var and `--live` flag, prompt for confirmation and support `--yes` for automated CI.
-  - Implement a throttler (token-bucket or leaky-bucket) as a small helper module and integrate it around order submissions.
-  - Add pre-trade checks: fetch account balance from `broker_api`, verify available margin, and check concentration/position limits before placing orders.
-  - Add JSON structured logging and log rotation (use `logging.handlers.RotatingFileHandler` or `TimedRotatingFileHandler`).
-  - Add unit and integration tests for the throttler, CLI flags, and pre-trade checks (use the offline broker for deterministic tests).
-- Libraries/techniques to consider: `ratelimit`, simple token-bucket implementation, `argparse`/`click`, `logging` with structured formatters.
+  - Add a CLI parser (e.g., `argparse`) in `scalper.py` with flags: `--dry-run`, `--live`, `--config`, `--log-level`,
+    `--max-trades`, `--iterations`.
+  - Enforce live guard early: check `ALLOW_LIVE` env var and `--live` flag, prompt for confirmation and support `--yes`
+    for automated CI.
+  - Implement a throttler (token-bucket or leaky-bucket) as a small helper module and integrate it around order
+    submissions.
+  - Add pre-trade checks: fetch account balance from `broker_api`, verify available margin, and check
+    concentration/position limits before placing orders.
+  - Add JSON structured logging and log rotation (use `logging.handlers.RotatingFileHandler` or
+    `TimedRotatingFileHandler`).
+  - Add unit and integration tests for the throttler, CLI flags, and pre-trade checks (use the offline broker for
+    deterministic tests).
+- Libraries/techniques to consider: `ratelimit`, simple token-bucket implementation, `argparse`/`click`, `logging` with
+  structured formatters.

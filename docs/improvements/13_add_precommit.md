@@ -2,12 +2,14 @@
 
 ## Goal
 
-Introduce `pre-commit` hooks to run formatting and basic linting automatically on commits to keep code style consistent and catch simple issues early.
+Introduce `pre-commit` hooks to run formatting and basic linting automatically on commits to keep code style consistent
+and catch simple issues early.
 
 ## Priority
 
 - Level: Medium
-- Rationale: Linting and formatting reduce review friction and help contributors follow project conventions, but they are not blockers for safety-critical fixes.
+- Rationale: Linting and formatting reduce review friction and help contributors follow project conventions, but they
+  are not blockers for safety-critical fixes.
 
 ## Owner & Estimated effort
 
@@ -17,33 +19,36 @@ Introduce `pre-commit` hooks to run formatting and basic linting automatically o
 ## Roadmap (example)
 
 - Week 1 — Short-term goals
-  - Add `.pre-commit-config.yaml` with `black`, `ruff`, and `isort`.  
+
+  - Add `.pre-commit-config.yaml` with `black`, `ruff`, and `isort`.
   - Document installation and usage in contributor docs.
 
 - Week 2 — Mid-term goals
-  - Run `pre-commit run --all-files` and commit formatting fixes in a single PR.  
+  - Run `pre-commit run --all-files` and commit formatting fixes in a single PR.
   - Add `pre-commit` run step to CI workflow.
 
 ### Quick wins (1–2 days)
 
-- Add `.pre-commit-config.yaml` and `pre-commit install` instructions.  
+- Add `.pre-commit-config.yaml` and `pre-commit install` instructions.
 - Run hooks locally and fix any auto-formatting outputs.
 
 ## Validation
 
-- `pre-commit install` succeeds locally and running `pre-commit run --all-files` returns success or shows fixable issues.  
+- `pre-commit install` succeeds locally and running `pre-commit run --all-files` returns success or shows fixable
+  issues.
 - A PR includes the `.pre-commit-config.yaml` and instructions in the repo docs.
 
 ## Acceptance criteria
 
-- [ ] `.pre-commit-config.yaml` added to repo root.  
-- [ ] Developer instructions added to `docs/improvements/06_code_quality_ci.md` or similar.  
+- [ ] `.pre-commit-config.yaml` added to repo root.
+- [ ] Developer instructions added to `docs/improvements/06_code_quality_ci.md` or similar.
 - [ ] CI runs `pre-commit` or `pre-commit` hooks are enforced locally.
 
 ## Notes
 
-- Pin `rev` values for reproducible hook versions.  
-- When enabling `pre-commit` across the repo, run `pre-commit run --all-files` and commit formatting changes in a single PR to reduce noise.
+- Pin `rev` values for reproducible hook versions.
+- When enabling `pre-commit` across the repo, run `pre-commit run --all-files` and commit formatting changes in a single
+  PR to reduce noise.
 
 ## Implementation hints
 
@@ -96,4 +101,3 @@ pre-commit run --all-files
 ---
 
 This task helps standardize formatting and linting to improve code quality and reviewer experience.
-

@@ -8,8 +8,7 @@ Provide a clear sequence of prioritized, time-boxed actions to improve safety, r
 
 - Week 1–2 (Safety & gating)
 
-  - Implement `--dry-run` default and `--live` guard (`ALLOW_LIVE`) in
-    `scalper.py`.
+  - Implement `--dry-run` default and `--live` guard (`ALLOW_LIVE`) in `scalper.py`.
 
 - Week 3–4 (CI and tests)
 
@@ -35,22 +34,21 @@ Provide a clear sequence of prioritized, time-boxed actions to improve safety, r
 
 ### Longer projects (3–8 weeks)
 
-- Move broker interactions behind an interface and add a simulated broker
-  implementation for testing and replay.
+- Move broker interactions behind an interface and add a simulated broker implementation for testing and replay.
 - Add observability (structured logging, metrics) and deployable monitoring.
 
 ## Priority
 
 Medium
 
-Estimated effort: 2–6 weeks (incremental)
-Owner: Team lead / Maintainer
+Estimated effort: 2–6 weeks (incremental) Owner: Team lead / Maintainer
 
 ## Acceptance criteria
 
 - [ ] `scalper.py` defaults to `--dry-run` and requires an explicit `ALLOW_LIVE` to run live.
 - [ ] A short-term CI job exists that runs the smoke test and linters on PRs.
-- [ ] A documented 90-day plan is present in `docs/improvements/09_prioritized_action_plan.md` with owner and time estimates.
+- [ ] A documented 90-day plan is present in `docs/improvements/09_prioritized_action_plan.md` with owner and time
+      estimates.
 
 ## Validation
 
@@ -64,6 +62,9 @@ Owner: Team lead / Maintainer
 ## Implementation hints
 
 - Break the 90-day plan into discrete, reviewable PRs: safety -> CI/tests -> config -> observability.
-- Implement early safety changes directly in `scalper.py` and add unit/integration tests that exercise the dry-run guard.
-- For CI, start with a single `ci.yml` job that installs dependencies and runs `pytest` and `pre-commit` checks; expand the matrix once stable.
-- Track progress with a project board or a checklist in the main issue tracking the 90-day plan; assign owners and due dates for each PR.
+- Implement early safety changes directly in `scalper.py` and add unit/integration tests that exercise the dry-run
+  guard.
+- For CI, start with a single `ci.yml` job that installs dependencies and runs `pytest` and `pre-commit` checks; expand
+  the matrix once stable.
+- Track progress with a project board or a checklist in the main issue tracking the 90-day plan; assign owners and due
+  dates for each PR.

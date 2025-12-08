@@ -17,11 +17,14 @@ Separate research/educational artifacts from production code, and document safe 
 ## Roadmap (example)
 
 - Week 1 — Short-term goals
-  - Create a `notes/` or `recipes/` directory at the repo root and move notebooks, ad-hoc scripts, and experimental files there.
+
+  - Create a `notes/` or `recipes/` directory at the repo root and move notebooks, ad-hoc scripts, and experimental
+    files there.
   - Ensure `README.md` contains a clear safety warning and links to `docs/improvements.md`.
 
 - Week 2 — Mid-term goals
-  - Update `CONTRIBUTING.md` with instructions for proposing changes, running tests, and PR expectations for live-trading code.
+  - Update `CONTRIBUTING.md` with instructions for proposing changes, running tests, and PR expectations for
+    live-trading code.
   - Keep `docs/improvements.md` as the canonical index for safety-related tasks.
 
 ### Quick wins (1–2 days)
@@ -53,8 +56,11 @@ Separate research/educational artifacts from production code, and document safe 
 
 - Suggested files to change: `README.md`, `CONTRIBUTING.md`, add `notes/` folder.
 - Concrete steps:
-  - Create `notes/` or `recipes/` and move notebooks and experimental scripts there; update their README to explain they are research-only.
+  - Create `notes/` or `recipes/` and move notebooks and experimental scripts there; update their README to explain they
+    are research-only.
   - Update `README.md` with a safety warning and link to `docs/improvements.md`.
   - Update `CONTRIBUTING.md` with steps to run tests, use dry-run flags, and PR expectations for live-trading code.
-  - Adjust imports or CI paths if any moved files are used by tests or actions; run the test suite to verify nothing broke.
-- Consider adding a small script `scripts/list-research.sh` to list research artifacts and help reviewers find non-production code.
+  - Adjust imports or CI paths if any moved files are used by tests or actions; run the test suite to verify nothing
+    broke.
+- Consider adding a small script `scripts/list-research.sh` to list research artifacts and help reviewers find
+  non-production code.

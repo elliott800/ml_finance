@@ -2,36 +2,33 @@
 
 ## Goal
 
-Provide automated tests and validation harnesses to ensure correctness of core
-logic and to prevent regressions.
+Provide automated tests and validation harnesses to ensure correctness of core logic and to prevent regressions.
 
 ## Tasks
 
 - Testing strategy
 
-  - Use `pytest` as the test runner. Organize tests under `tests/` with clear
-    directories such as `tests/unit/` and `tests/integration/`.
+  - Use `pytest` as the test runner. Organize tests under `tests/` with clear directories such as `tests/unit/` and
+    `tests/integration/`.
 
 - Unit tests
 
-  - Add unit tests for pure functions and local logic (indicators, sizing, and
-    margin calculations). Use fixtures to share common setup.
+  - Add unit tests for pure functions and local logic (indicators, sizing, and margin calculations). Use fixtures to
+    share common setup.
 
 - Integration / smoke tests (dry-run)
 
-  - Add an integration smoke test that runs the main loop in `--dry-run` mode
-    against mocked broker endpoints to confirm end-to-end behavior.
+  - Add an integration smoke test that runs the main loop in `--dry-run` mode against mocked broker endpoints to confirm
+    end-to-end behavior.
 
 - Property and fuzz tests
 
-  - For critical numeric functions, add property-based tests using
-    `hypothesis` to detect edge cases.
+  - For critical numeric functions, add property-based tests using `hypothesis` to detect edge cases.
 
 - Validation harnesses
 
-  - Add `tests/fixtures` that provide sample CSV price feeds (use
-    `csvs/assets/*` already in the repo) and expected outputs for replay
-    testing.
+  - Add `tests/fixtures` that provide sample CSV price feeds (use `csvs/assets/*` already in the repo) and expected
+    outputs for replay testing.
 
 - CI integration
 
@@ -39,16 +36,17 @@ logic and to prevent regressions.
 
 ## Roadmap (phased)
 
-- Quick wins (1–2 days): Add `tests/` skeleton, a single unit test for a pure function, and the dry-run smoke test that executes one iteration.
-- Medium (1–2 weeks): Add fixtures for CSV replay tests, integrate `hypothesis` for property tests for critical math, and ensure tests run in CI.
+- Quick wins (1–2 days): Add `tests/` skeleton, a single unit test for a pure function, and the dry-run smoke test that
+  executes one iteration.
+- Medium (1–2 weeks): Add fixtures for CSV replay tests, integrate `hypothesis` for property tests for critical math,
+  and ensure tests run in CI.
 - Longer (2–4 weeks): Expand integration tests against a simulated broker and add coverage reporting.
 
 ## Priority
 
 High
 
-Estimated effort: 8–16 hours
-Owner: Maintainer / QA
+Estimated effort: 8–16 hours Owner: Maintainer / QA
 
 ## Acceptance criteria
 
@@ -59,16 +57,18 @@ Owner: Maintainer / QA
 
 ## Validation
 
-- `pytest` runs locally and in CI; unit tests cover core logic and integration
-  smoke tests validate the dry-run loop.
+- `pytest` runs locally and in CI; unit tests cover core logic and integration smoke tests validate the dry-run loop.
 
 ## Implementation hints
 
-- Use `csvs/assets/*` sample CSVs for replay tests. Add fixtures under `tests/fixtures/` that load these CSVs and provide deterministic data to the dry-run loop.
+- Use `csvs/assets/*` sample CSVs for replay tests. Add fixtures under `tests/fixtures/` that load these CSVs and
+  provide deterministic data to the dry-run loop.
 - Steps:
   - Add unit tests for pure functions (indicators, sizing, margin) under `tests/unit/`.
-  - Add integration smoke test `tests/integration/test_dryrun.py` that runs `scalper.py --dry-run --iterations 1` via `subprocess` initially.
-  - Refactor `scalper.py` to expose an importable `main()` so tests can call it directly for faster and more deterministic in-process tests.
+  - Add integration smoke test `tests/integration/test_dryrun.py` that runs `scalper.py --dry-run --iterations 1` via
+    `subprocess` initially.
+  - Refactor `scalper.py` to expose an importable `main()` so tests can call it directly for faster and more
+    deterministic in-process tests.
   - Use a simulated/offline broker implementation for integration tests to avoid external network calls in CI.
   - Add `hypothesis`-based property tests for critical numeric functions where applicable.
 - Example test file for smoke test (subprocess approach):
@@ -83,9 +83,10 @@ Owner: Maintainer / QA
       assert result.returncode == 0, result.stderr
   ```
 
-- Consider using `pytest` markers to separate quick smoke tests from longer integration tests that rely on heavier fixtures.
+- Consider using `pytest` markers to separate quick smoke tests from longer integration tests that rely on heavier
+  fixtures.
 
 ## Notes
 
-- Start with a focused, high-value test suite (critical math functions and the
-  dry-run main loop) and expand coverage iteratively.
+- Start with a focused, high-value test suite (critical math functions and the dry-run main loop) and expand coverage
+  iteratively.

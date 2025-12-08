@@ -1,6 +1,9 @@
 # Improvements and Safety Recommendations
 
-This document is the single, glanceable index of prioritized, concrete recommendations for the repository. It focuses on immediate safety for live trading, dependency and packaging fixes, broker API and trading-loop hardening, repository organization, and suggested next steps. Detailed per-topic implementation plans live under `docs/improvements/` (linked below).
+This document is the single, glanceable index of prioritized, concrete recommendations for the repository. It focuses on
+immediate safety for live trading, dependency and packaging fixes, broker API and trading-loop hardening, repository
+organization, and suggested next steps. Detailed per-topic implementation plans live under `docs/improvements/` (linked
+below).
 
 ## Glossary
 
@@ -9,14 +12,17 @@ This document is the single, glanceable index of prioritized, concrete recommend
 
 ## Safety note
 
-- The project defaults to dry-run. Live trading must be explicitly enabled by both setting `ALLOW_LIVE=true` and passing `--live`.
+- The project defaults to dry-run. Live trading must be explicitly enabled by both setting `ALLOW_LIVE=true` and passing
+  `--live`.
 - Always run `python scalper.py --dry-run` and verify logs before any live run.
 
 ## Top-priority checklist (do these first)
 
-- [ ] Add a strict dry-run guard in `scalper.py`: require both `ALLOW_LIVE=true` and `--live` to place orders (Critical).
+- [ ] Add a strict dry-run guard in `scalper.py`: require both `ALLOW_LIVE=true` and `--live` to place orders
+      (Critical).
 - [ ] Add CLI flags to `scalper.py`: `--dry-run`, `--config`, `--log-level`, `--max-trades`.
-- [ ] Harden `broker_api.py`: remove broad `except:` blocks, raise or handle targeted exceptions, add structured logging and retry/backoff where appropriate.
+- [ ] Harden `broker_api.py`: remove broad `except:` blocks, raise or handle targeted exceptions, add structured logging
+      and retry/backoff where appropriate.
 
 ## Prioritized tasks (summary)
 

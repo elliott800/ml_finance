@@ -2,12 +2,14 @@
 
 ## Goal
 
-Add a minimal GitHub Actions CI job and a single dry‑run smoke test so PRs validate that `scalper.py` starts and completes a single iteration without placing live orders.
+Add a minimal GitHub Actions CI job and a single dry‑run smoke test so PRs validate that `scalper.py` starts and
+completes a single iteration without placing live orders.
 
 ## Priority
 
 - Level: High
-- Rationale: Automated CI with a dry‑run smoke test prevents regressions and gives maintainers confidence before merging changes that touch trading or startup code.
+- Rationale: Automated CI with a dry‑run smoke test prevents regressions and gives maintainers confidence before merging
+  changes that touch trading or startup code.
 
 ## Owner & Estimated effort
 
@@ -17,10 +19,12 @@ Add a minimal GitHub Actions CI job and a single dry‑run smoke test so PRs val
 ## Roadmap (example)
 
 - Week 1 — Short-term goals
+
   - Add `tests/integration/test_dryrun.py` smoke test that runs `scalper.py --dry-run --iterations 1`.
   - Add minimal `.github/workflows/ci.yml` to run tests and basic linters.
 
 - Week 2 — Mid-term goals
+
   - Improve tests to import `scalper` main function (faster, more reliable).
   - Add caching of dependencies in CI and extend linters run.
 
@@ -30,40 +34,42 @@ Add a minimal GitHub Actions CI job and a single dry‑run smoke test so PRs val
 
 ### Quick wins (1–2 days)
 
-- Add the smoke test using `subprocess` (fast to implement).  
+- Add the smoke test using `subprocess` (fast to implement).
 - Add `ci.yml` with a single job that installs dependencies and runs `pytest`.
 
 ### Medium projects (1–2 weeks)
 
-- Refactor `scalper.py` to expose an importable `main()` so tests can call it directly.  
+- Refactor `scalper.py` to expose an importable `main()` so tests can call it directly.
 - Add more unit tests around critical functions (order sizing, position checks).
 
 ### Longer projects (3–8+ weeks)
 
-- Add full integration tests against a simulated broker or recorded responses.  
+- Add full integration tests against a simulated broker or recorded responses.
 - Add security scans and dependency auditing into CI.
 
 ## Validation
 
-- CI run on PRs completes and the smoke test passes.  
+- CI run on PRs completes and the smoke test passes.
 - `pytest` locally passes for the new smoke test (`pytest tests/integration/test_dryrun.py`).
 
 ## Acceptance criteria
 
-- [ ] `tests/integration/test_dryrun.py` exists and is runnable locally.  
-- [ ] `.github/workflows/ci.yml` exists and triggers on `push`/`pull_request`.  
+- [ ] `tests/integration/test_dryrun.py` exists and is runnable locally.
+- [ ] `.github/workflows/ci.yml` exists and triggers on `push`/`pull_request`.
 - [ ] CI job runs tests and exits with status 0 on the main branch (or PR against main).
 
 ## Notes
 
-- The smoke test must use `--dry-run` and never enable live trading.  
-- If startup requires credentials, the test should either set harmless env vars or use a mode that avoids external calls.
+- The smoke test must use `--dry-run` and never enable live trading.
+- If startup requires credentials, the test should either set harmless env vars or use a mode that avoids external
+  calls.
 - Link to related tasks: `docs/improvements/08_tests_and_validation.md` and `docs/improvements/01_immediate_safety.md`.
 
 ## Implementation hints
 
-- Files to add: `tests/integration/test_dryrun.py`, `.github/workflows/ci.yml`.  
+- Files to add: `tests/integration/test_dryrun.py`, `.github/workflows/ci.yml`.
 - Commands (local):
+
   - `python -m venv .venv && source .venv/bin/activate`
   - `pip install -U pip && pip install pytest`
   - `pytest -q tests/integration/test_dryrun.py`
@@ -84,4 +90,5 @@ def test_scalper_dryrun_smoke():
 
 ---
 
-Usage: Copy this task into the `docs/improvements/` folder and assign an owner. Start with the quick wins to get CI validation fast.
+Usage: Copy this task into the `docs/improvements/` folder and assign an owner. Start with the quick wins to get CI
+validation fast.

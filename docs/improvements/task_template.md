@@ -17,11 +17,13 @@ A one-sentence statement of the outcome this task should achieve.
 ## Roadmap (example)
 
 - Week 1–2 — Short-term goals
+
   - Action 1: short description
   - Action 2: short description
   - Action 3: short description
 
 - Week 3–4 — Mid-term goals
+
   - Action 1: short description
   - Action 2: short description
 
@@ -54,8 +56,8 @@ A one-sentence statement of the outcome this task should achieve.
 
 ## Notes
 
-- Any additional context, links, or constraints. Include references to
-  related tasks (e.g., `docs/improvements/09_prioritized_action_plan.md`).
+- Any additional context, links, or constraints. Include references to related tasks (e.g.,
+  `docs/improvements/09_prioritized_action_plan.md`).
 
 ## Implementation hints
 
@@ -63,6 +65,5 @@ A one-sentence statement of the outcome this task should achieve.
 
 ---
 
-Usage: Copy this file when creating a new task and replace the placeholders
-(`{number}`, `{short title}`, etc.). Keep each task focused and link related
-follow-up tasks under `Notes`.
+Usage: Copy this file when creating a new task and replace the placeholders (`{number}`, `{short title}`, etc.). Keep
+each task focused and link related follow-up tasks under `Notes`.
