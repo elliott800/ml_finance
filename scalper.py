@@ -33,10 +33,6 @@ while True:#trade loop
         if inventory==0 and bu==0 and au==0:
             even_entry_required=False
             api.buy(instrument_name,trade_units,bid_price);api.sell(instrument_name,trade_units,ask_price)
-        if net==0:
-            test_units=abs(inventory+bu-au+trade_units)
-        else:
-            test_units=abs(inventory+bu-au+net)
         if margin_used<10:#critical mm equation
             if net==0 and even_entry_required:api.buy(instrument_name,trade_units,bid_price);api.sell(instrument_name,trade_units,ask_price)#disable to slow down
             if net>0:api.buy(instrument_name,net,bid_price)
