@@ -4,7 +4,7 @@ last_order_refresh=now()
 distance=1
 trade_units=1000
 refresh=60*60
-api=oanda_api("2c609c14c73aebdddb152cf0b3b782db-21d631577803d5283e01c80ef8c428e0","101-001-31663025-001")
+api=oanda_api("","")
 instruments=list(api._load_tradable_instruments())
 def find_place_value(value):
     # Convert the value to string to check where the decimal point is
