@@ -50,12 +50,3 @@ any code in live trading mode without following the safety instructions in the
 ## Contributing & Safety
 
 - Always open a PR for code changes. Small, focused PRs are easier to review.
-
-## Notes
-
-- This repo currently emphasizes documentation and planning; several code files
-  may be research snippets that require cleanup before production use.
-
-If you want, I can also convert `readme.txt` into a `README.md` in-place (done)
-and improve the per-topic docs for beginners (wording, examples, step-by-step
-commands).

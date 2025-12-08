@@ -53,6 +53,7 @@ This document is the single, glanceable index of prioritized, concrete recommend
 - Add CI & smoke test — `docs/improvements/11_add_ci_and_smoke_test.md:1`
 - Add .env example & ignore `.env` — `docs/improvements/12_add_env_example_and_gitignore.md:1`
 - Add pre-commit hooks — `docs/improvements/13_add_precommit.md:1`
+- Package management — `docs/improvements/14_package_management.md:1`
 
 ## Next steps (recommended immediate actions)
 
@@ -60,5 +61,3 @@ This document is the single, glanceable index of prioritized, concrete recommend
 - Harden `broker_api.py` exception handling and add structured logging (owner: backend/broker lead).
 - Pin `requirements.txt` and validate reproducible installs in a fresh venv (owner: devops/maintainer).
 - Add a minimal CI job that runs a lint and the smoke dry-run (owner: maintainer / CI owner).
-
-If you want, I can also run a quick patch to `scalper.py` and `broker_api.py` to add the `--dry-run` guard and some basic exception handling as a follow-up.
