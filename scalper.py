@@ -34,9 +34,8 @@ while True:#trade loop
         net=np.floor(au-inventory-bu)#critical mm equation
         even_entry_required=True
         if inventory==0 and bu==0 and au==0:
-            if margin_used<10:
-                even_entry_required=False
-                api.buy(trade_units,bid_price);api.sell(trade_units,ask_price)
+            even_entry_required=False
+            api.buy(trade_units,bid_price);api.sell(trade_units,ask_price)
         if net==0:
             test_units=abs(inventory+bu-au+trade_units)
         else:
