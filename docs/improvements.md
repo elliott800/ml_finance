@@ -81,6 +81,15 @@ steps, and owner suggestions.
 - [Immediate safety](docs/improvements/01_immediate_safety.md) —
   `docs/improvements/01_immediate_safety.md:1`
 
+- [Add CI & smoke test](docs/improvements/11_add_ci_and_smoke_test.md) —
+  `docs/improvements/11_add_ci_and_smoke_test.md:1`
+
+- [Add .env.example & ignore `.env`](docs/improvements/12_add_env_example_and_gitignore.md) —
+  `docs/improvements/12_add_env_example_and_gitignore.md:1`
+
+- [Add pre-commit hooks](docs/improvements/13_add_precommit.md) —
+  `docs/improvements/13_add_precommit.md:1`
+
 The top-level checklist is below for quick tracking; consult the per-topic files
 for implementation details.
 
