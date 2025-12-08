@@ -1,4 +1,4 @@
-# ML Finance (Beginner Guide)
+# ML Finance
 
 This repository collects useful Python finance/algorithmic trading utilities,
 reference code, and documentation. It is a research-first project — do not run
@@ -9,7 +9,7 @@ any code in live trading mode without following the safety instructions in the
 
 - Collect well-known finance and ML routines in one place.
 
-## Quick Start (for beginners)
+## Quick Start
 
 1. Clone the repo:
 
