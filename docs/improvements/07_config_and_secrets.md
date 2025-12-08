@@ -32,16 +32,53 @@ defaults for local development and CI.
 
   - Document key rotation and secrets expiration best practices in `docs/`.
 
+## Roadmap (phased)
+
+- Quick wins (1–2 days): Add `.env.example`, add `.env` to `.gitignore`, and document copying `.env.example` to `.env`.
+- Medium (1–2 weeks): Implement `pydantic` settings object and add validation at startup, add checks for file permissions.
+- Longer (2–4 weeks): Integrate secrets with a secrets manager in CI and document rotation policies.
+
 ## Priority
 
 High
+
 Estimated effort: 4–8 hours
 Owner: Maintainer / Dev
+
+## Acceptance criteria
+
+- [ ] `.env.example` exists and documents required variables.
+- [ ] `.env` is listed in `.gitignore` and not tracked in the index.
+- [ ] There is a typed settings object (e.g., `pydantic.BaseSettings`) with validation for critical values.
+- [ ] `scalper.py` or startup path validates critical config and fails fast with clear errors.
 
 ## Validation
 
 - No secrets present in the repository (ignoring historical commits) and
   `.gitignore` includes credential files and `.env`.
+- Running the app with missing critical settings returns a clear, non-zero exit code and helpful error message.
+
+## Implementation hints
+
+- Files to add/update:
+  - `app/settings.py` or `src/config.py` (implement `pydantic.BaseSettings`)
+  - `.env.example` at repo root
+  - `.gitignore` (append `.env` if missing)
+- Example `pydantic` settings snippet:
+
+  ```python
+  from pydantic import BaseSettings, Field
+
+  class Settings(BaseSettings):
+      api_key: str = Field(..., env="API_KEY")
+      api_secret: str = Field(..., env="API_SECRET")
+      allow_live: bool = Field(False, env="ALLOW_LIVE")
+
+      class Config:
+          env_file = ".env"
+  ```
+
+- When validating file permissions, check `os.stat(path).st_mode` and warn if world-readable.
 
 ## Notes
 

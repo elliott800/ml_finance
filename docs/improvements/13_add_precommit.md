@@ -87,6 +87,12 @@ pre-commit install
 pre-commit run --all-files
 ```
 
+## Implementation checklist
+
+- [ ] Add `.pre-commit-config.yaml` to repo root.
+- [ ] Document how to install and run pre-commit in `CONTRIBUTING.md` or `docs/improvements/06_code_quality_ci.md`.
+- [ ] Run `pre-commit run --all-files` and commit resulting formatting changes in a single PR.
+
 ---
 
 This task helps standardize formatting and linting to improve code quality and reviewer experience.

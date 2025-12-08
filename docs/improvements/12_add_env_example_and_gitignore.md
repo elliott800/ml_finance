@@ -73,6 +73,12 @@ git rm --cached .env || true
 > Copy `.env.example` to `.env` and fill in local values: `cp .env.example .env`. Never commit `.env` to Git. If a secret is
 > accidentally committed, rotate it immediately.
 
+## Implementation checklist
+
+- [ ] Create `.env.example` at repo root.
+- [ ] Append `.env` to `.gitignore` if missing.
+- [ ] Update `docs/improvements/07_config_and_secrets.md` with usage instructions for `.env`.
+
 ---
 
 Start with the quick wins to make local setup explicit and safe for contributors.

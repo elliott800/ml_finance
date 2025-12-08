@@ -47,3 +47,13 @@ links for future contributors.
 
 - Prefer small PRs that change one concern at a time (safety, config, CI,
   tests).
+
+## Acceptance criteria
+
+- [ ] Reviewers can find the rationale and tradeoffs for major tasks in `docs/improvements`.
+- [ ] Decisions (e.g., choosing `pydantic`) are documented along with the reasoning.
+
+## Implementation hints
+
+- Keep this file updated when major architectural choices are made; link to PRs and decision records.
+- When choosing libraries, include version rationale and compatibility notes.

@@ -64,33 +64,6 @@ Provide clear, beginner-friendly guidance and repository changes to make creatin
 - This task is intentionally friendly to beginners: it documents both an opinionated, reproducible approach (`poetry`) and the built-in, low-friction approach (`venv`). The maintainer can choose to adopt Poetry fully or keep it as an optional recommendation.
 - Related: `docs/improvements/12_add_env_example_and_gitignore.md` and `CONTRIBUTING.md`.
 
-## Implementation hints
-
-- Suggested files to change:
-  - `README.md` - add "Environment setup" and short commands for macOS/Linux and Windows.
-  - `CONTRIBUTING.md` - add a short paragraph recommending the preferred approach and a safety reminder to run `--dry-run` where appropriate.
-  - CI workflow files (e.g., `.github/workflows/*`) - update dependency installation steps.
-  - Optionally add `pyproject.toml` and `poetry.lock` to repo root.
-
-- Beginner-friendly commands (Poetry):
-  - Install (recommended via `pipx` or pip): `pipx install poetry` or `pip install --user poetry`
-  - Initialize project interactively: `poetry init` (or create a minimal `pyproject.toml` and commit)
-  - Install dependencies: `poetry install`
-  - Add a dependency: `poetry add <package>`
-  - Enter shell: `poetry shell`
-  - Export `requirements.txt` for CI or non-Poetry environments:
-    `poetry export -f requirements.txt --output requirements.txt --without-hashes`
-
-- Beginner-friendly commands (venv + pip):
-  - Create a venv: `python -m venv .venv`
-  - Activate (macOS/Linux): `source .venv/bin/activate`
-  - Activate (Windows PowerShell): `.\.venv\Scripts\Activate.ps1`
-  - Install deps: `python -m pip install -r requirements.txt`
-
-- CI tips:
-  - Use `actions/setup-python` and then `pip install poetry` (or `pipx`) and run `poetry install`.
-  - If CI must remain `requirements.txt`-based, export `requirements.txt` from Poetry as part of the release or PR process.
-
 ---
 
 Usage: Copy this file when creating a new task and replace the placeholders (`{number}`, `{short title}`, etc.). Keep each task focused and link related follow-up tasks under `Notes`.
