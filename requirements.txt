@@ -11,7 +11,7 @@ pyfolio
 quantopian
 alphalens
 sympy
-scikit.learn
+scikit-learn
 spacy
 textacy
 textblob

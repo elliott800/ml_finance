@@ -22,21 +22,30 @@ any code in live trading mode without following the safety instructions in the
 
    ```bash
    python3 -m venv .venv
-   source .venv/bin/activate
+   source .venv/bin/activate  # macOS / Linux
+   .venv\Scripts\activate    # Windows (PowerShell use: .venv\Scripts\Activate.ps1)
    ```
 
 3. Install dependencies (the repo may not have pinned versions yet; check
    `requirements.txt`):
 
    ```bash
+   pip install --upgrade pip
    pip install -r requirements.txt
    ```
 
-4. Read the docs first:
+4. Install optional developer tools:
+
+   ```bash
+   pip install pre-commit pytest ruff flake8 black isort
+   pre-commit install
+   ```
+
+5. Read the docs first:
 
     - `docs/improvements.md` — high-level summary + top checklist (start here)
 
-5. Run scripts in dry-run / offline mode only. The project recommends adding and
+6. Run scripts in dry-run / offline mode only. The project recommends adding and
    using a `--dry-run` flag. Do not enable live trading without team approval
    and safety checks.
 

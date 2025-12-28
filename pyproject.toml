@@ -1,0 +1,22 @@
+[project]
+name = "ml-finance"
+version = "0.0.0"
+description = "Small ml finance helpers"
+authors = [ { name = "Repo Maintainer", email = "noreply@example.com" } ]
+readme = "README.md"
+requires-python = ">=3.10"
+
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.ruff]
+exclude = ["exercise", "exercise/*"]
+
+[tool.black]
+exclude = "exercise/"
+line-length = 88
+
+[tool.isort]
+skip = ["exercise"]
+profile = "black"

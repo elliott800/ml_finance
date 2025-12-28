@@ -23,5 +23,6 @@ Reporting issues
 
 Code style
 
-- Follow the repository linters and formatting rules (we recommend `black`,
-  `ruff`, `isort`).
+- Follow the repository linters and formatting rules (we recommend `black`, `ruff`, `isort`).
+
+- Use `pre-commit` hooks locally: install via `pip install pre-commit` and run `pre-commit install` to enable checks on commit.
