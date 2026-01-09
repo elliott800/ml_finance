@@ -114,5 +114,5 @@ class yahoo_api(dict):
 ####################################
 if __name__ == "__main__":
     yh_api=yahoo_api()
-    print(yh_api.get_symbol_history('uso','mo'))
+    print(yh_api.get_symbol_history('uso','d').to_period('M'))
     input()

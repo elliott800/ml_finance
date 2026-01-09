@@ -1,5 +1,6 @@
 #requirements.txt
 #terminal command:pip install -r requirements.txt
+discord
 numpy
 pandas
 statsmodels
