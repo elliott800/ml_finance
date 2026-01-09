@@ -1,0 +1,72 @@
+Restricted Use Contributor License Agreement
+1. Nature of the Project
+
+This repository and all associated materials (the “Project”) are private, proprietary, and confidential.
+The Project is not open source.
+
+Access to the Project does not imply any public, open, or unrestricted licence.
+
+2. Definitions
+
+“Maintainer” means the individual or entity that controls the repository and accepts contributions.
+
+“Contributor” means any individual or entity that submits code, documentation, or other materials to the Project.
+
+“Contribution” means any original work submitted by a Contributor for inclusion in the Project.
+
+“Authorised Users” means Contributors and others explicitly granted access by the Maintainer.
+
+3. Ownership of Contributions
+
+Unless otherwise agreed in writing:
+
+Each Contributor retains copyright in their own Contributions.
+
+By submitting a Contribution, the Contributor grants the Maintainer a perpetual, worldwide, non-exclusive, royalty-free licence to use, modify, reproduce, and distribute the Contribution as part of the Project.
+
+No ownership rights are transferred by this licence.
+
+4. Licence to Use the Project
+
+Subject to compliance with this licence, Authorised Users are granted a limited, non-transferable right to:
+
+access, use, and modify the Project; and
+
+use the Project only in connection with projects in which the Authorised Users are directly involved.
+
+This licence is granted solely for collaborative work within the scope of the Project.
+
+5. Restrictions on Redistribution and Independent Use
+
+Unless explicitly authorised in writing by the Maintainer, Authorised Users must not:
+
+redistribute the Project or any part of it outside this repository;
+
+publish the Project or Contributions in other repositories or products;
+
+sublicense, sell, or transfer the Project;
+
+use the Project in unrelated projects where the Authorised Users are not directly involved in the outcomes.
+
+Access to the Project does not grant rights for general reuse, reuse by third parties, or reuse in unrelated commercial or non-commercial activities.
+
+6. Third-Party Rights and Contributions
+
+Contributors represent that their Contributions are original and do not knowingly infringe the rights of any third party.
+
+Where Contributions include third-party material, the Contributor must clearly identify any applicable licence or usage restrictions.
+
+7. No Warranty
+
+The Project is provided “as is”, without warranties of any kind, express or implied, including warranties of merchantability, fitness for a particular purpose, or non-infringement.
+
+8. Termination
+
+Any violation of this licence automatically terminates the rights granted to the offending party.
+Upon termination, continued use, copying, or distribution of the Project is prohibited.
+
+9. Governing Law and Jurisdiction
+
+This licence is governed by and construed in accordance with the laws of the United States, without regard to conflict-of-law principles.
+
+Nothing in this licence limits the applicability of mandatory local laws where such limitation is prohibited.
